@@ -839,7 +839,6 @@ int main() {
     std::chrono::time_point<std::chrono::system_clock> start,end;
     std::chrono::duration<double> elapsed_seconds;
 
-    /*
     // Day 1
     {
         std::cout << "================== Day 1 ==================" << std::endl;
@@ -952,9 +951,7 @@ int main() {
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
-     */
     // Day 8
-
     {
         std::cout << "================== Day 8 ==================" << std::endl;
         std::cout << "Task 1:" << std::endl;
