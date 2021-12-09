@@ -64,6 +64,23 @@ bool same_different_order(std::string container, std::string str2){
                   };
     return asd[0] && asd[1] && asd[2];
 }
+uint64_t sum_of_basin(std::array<std::array<int,100>,100>& map, std::vector<std::pair<int,int>>& visited, size_t i, size_t j){
+
+    if (map[i][j] == 9 || std::find(visited.begin(), visited.end(), std::pair(static_cast<int>(i),static_cast<int>(j))) != visited.end())
+        return 0;
+    visited.emplace_back(i,j);
+    uint64_t sum = 1;
+    if (i+1 < 100)
+        sum += sum_of_basin(map, visited, i+1, j);
+    if (i > 0)
+        sum += sum_of_basin(map, visited, i-1, j);
+    if (j > 0)
+        sum += sum_of_basin(map, visited, i, j-1);
+    if (j+1 < 100)
+        sum += sum_of_basin(map, visited, i, j+1);
+
+    return sum;
+}
 
 // For day 4
 struct TableElement{
@@ -833,12 +850,133 @@ uint64_t d8t2(){
     return res;
 }
 
+uint64_t d9t1(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day9.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    int map[100][100];
+    for (size_t i{0}; i < vec.size(); ++i)
+        for (size_t j{0}; j < vec.at(i).size(); ++j)
+            map[i][j] = static_cast<int>(vec.at(i).at(j)) - 48;
+
+    uint64_t sum = 0;
+    for (size_t i{0}; i < 100; ++i){
+        for (size_t j{0}; j < 100; ++j) {
+            if (i == 0) {   //  First row
+                if (j == 0) {   //Top left
+                    if (map[i + 1][j] > map[i][j] && map[i][j + 1] > map[i][j])
+                        sum += map[i][j] + 1;
+                } else if (j == 99) {  //Top right
+                    if (map[i + 1][j] > map[i][j] && map[i][j - 1] > map[i][j])
+                        sum += map[i][j] + 1;
+                } else {
+                    if (map[i + 1][j] > map[i][j] && map[i][j + 1] > map[i][j] && map[i][j - 1] > map[i][j])
+                        sum += map[i][j] + 1;
+                }
+            } else if (i == 99) { // Last row
+                if (j == 0) { // Bottom left
+                    if (map[i][j + 1] > map[i][j] && map[i - 1][j] > map[i][j])
+                        sum += map[i][j] + 1;
+                } else if (j == 99) { // Bottom right
+                    if (map[i - 1][j] > map[i][j] && map[i][j - 1] > map[i][j])
+                        sum += map[i][j] + 1;
+                } else {
+                    if (map[i][j - 1] > map[i][j] && map[i][j + 1] > map[i][j] && map[i - 1][j] > map[i][j])
+                        sum += map[i][j] + 1;
+                }
+            } else if (j == 0) { // First column
+                if (map[i-1][j] > map[i][j] && map[i+1][j] > map[i][j] && map[i][j+1] > map[i][j])
+                    sum += map[i][j] + 1;
+            } else if (j == 99) { // Last column
+                if (map[i-1][j] > map[i][j] && map[i+1][j] > map[i][j] && map[i][j-1] > map[i][j])
+                    sum += map[i][j] + 1;
+            } else {
+                if (map[i-1][j] > map[i][j] && map[i+1][j] > map[i][j] && map[i][j-1] > map[i][j] && map[i][j+1] > map[i][j])
+                    sum += map[i][j] + 1;
+            }
+        }
+    }
+    return sum;
+}
+uint64_t d9t2(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day9.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::array<std::array<int,100>,100> map{};
+    for (size_t i{0}; i < vec.size(); ++i)
+        for (size_t j{0}; j < vec.at(i).size(); ++j)
+            map[i][j] = static_cast<int>(vec.at(i).at(j)) - 48;
+
+    // Find lowest points
+    std::vector<std::pair<size_t,size_t>> lowest_points;
+    for (size_t i{0}; i < 100; ++i) {
+        for (size_t j{0}; j < 100; ++j) {
+            if (i == 0) {   //  First row
+                if (j == 0) {   //Top left
+                    if (map[i + 1][j] > map[i][j] && map[i][j + 1] > map[i][j])
+                        lowest_points.emplace_back(i, j);
+                } else if (j == 99) {  //Top right
+                    if (map[i + 1][j] > map[i][j] && map[i][j - 1] > map[i][j])
+                        lowest_points.emplace_back(i, j);
+                } else {
+                    if (map[i + 1][j] > map[i][j] && map[i][j + 1] > map[i][j] && map[i][j - 1] > map[i][j])
+                        lowest_points.emplace_back(i, j);
+                }
+            } else if (i == 99) { // Last row
+                if (j == 0) { // Bottom left
+                    if (map[i][j + 1] > map[i][j] && map[i - 1][j] > map[i][j])
+                        lowest_points.emplace_back(i, j);
+                } else if (j == 99) { // Bottom right
+                    if (map[i - 1][j] > map[i][j] && map[i][j - 1] > map[i][j])
+                        lowest_points.emplace_back(i, j);
+                } else {
+                    if (map[i][j - 1] > map[i][j] && map[i][j + 1] > map[i][j] && map[i - 1][j] > map[i][j])
+                        lowest_points.emplace_back(i, j);
+                }
+            } else if (j == 0) { // First column
+                if (map[i - 1][j] > map[i][j] && map[i + 1][j] > map[i][j] && map[i][j + 1] > map[i][j])
+                    lowest_points.emplace_back(i, j);
+            } else if (j == 99) { // Last column
+                if (map[i - 1][j] > map[i][j] && map[i + 1][j] > map[i][j] && map[i][j - 1] > map[i][j])
+                    lowest_points.emplace_back(i, j);
+            } else {
+                if (map[i - 1][j] > map[i][j] && map[i + 1][j] > map[i][j] && map[i][j - 1] > map[i][j] &&
+                    map[i][j + 1] > map[i][j])
+                    lowest_points.emplace_back(i, j);
+            }
+        }
+    }
+
+    // Go through all lowest points and find the 3 biggest basins
+    uint64_t largest_basins[3]{0,0,0};
+    size_t cnt = 0;
+    for (const auto& ref : lowest_points){
+        std::vector<std::pair<int,int>> vis;
+        uint64_t num = sum_of_basin(map,vis,ref.first,ref.second);
+        if (num >= largest_basins[0]){
+            largest_basins[2] = largest_basins[1];
+            largest_basins[1] = largest_basins[0];
+            largest_basins[0] = num;
+        } else if (num >= largest_basins[1]){
+            largest_basins[2] = largest_basins[1];
+            largest_basins[1] = num;
+        } else if (num >= largest_basins[2]){
+            largest_basins[2] = num;
+        }
+    }
+
+    return largest_basins[0] * largest_basins[1] * largest_basins[2];
+}
+
 int main() {
 
     uint64_t res;
     std::chrono::time_point<std::chrono::system_clock> start,end;
     std::chrono::duration<double> elapsed_seconds;
 
+    /*
     // Day 1
     {
         std::cout << "================== Day 1 ==================" << std::endl;
@@ -967,8 +1105,23 @@ int main() {
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
-
-
+    */
+    // Day 9
+    {
+        std::cout << "================== Day 9 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d9t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d9t2();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
 
     return 0;
 }
