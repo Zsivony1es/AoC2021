@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <chrono>
 #include <array>
+#include <map>
 
 #define NC "\e[0m"
 #define RED "\e[0;31m"
@@ -64,24 +65,24 @@ bool same_different_order(std::string container, std::string str2){
                   };
     return asd[0] && asd[1] && asd[2];
 }
-uint64_t sum_of_basin(std::array<std::array<int,100>,100>& map, std::vector<std::pair<int,int>>& visited, size_t i, size_t j){
+uint64_t sum_of_basin(std::array<std::array<int,100>,100>& map, std::vector<std::pair<int,int>>& visited, size_t i, size_t j) {
 
-    if (map[i][j] == 9 || std::find(visited.begin(), visited.end(), std::pair(static_cast<int>(i),static_cast<int>(j))) != visited.end())
+    if (map[i][j] == 9 ||
+        std::find(visited.begin(), visited.end(), std::pair(static_cast<int>(i), static_cast<int>(j))) != visited.end())
         return 0;
-    visited.emplace_back(i,j);
+    visited.emplace_back(i, j);
     uint64_t sum = 1;
-    if (i+1 < 100)
-        sum += sum_of_basin(map, visited, i+1, j);
+    if (i + 1 < 100)
+        sum += sum_of_basin(map, visited, i + 1, j);
     if (i > 0)
-        sum += sum_of_basin(map, visited, i-1, j);
+        sum += sum_of_basin(map, visited, i - 1, j);
     if (j > 0)
-        sum += sum_of_basin(map, visited, i, j-1);
-    if (j+1 < 100)
-        sum += sum_of_basin(map, visited, i, j+1);
+        sum += sum_of_basin(map, visited, i, j - 1);
+    if (j + 1 < 100)
+        sum += sum_of_basin(map, visited, i, j + 1);
 
     return sum;
 }
-
 // For day 4
 struct TableElement{
     bool called;
@@ -970,6 +971,136 @@ uint64_t d9t2(){
     return largest_basins[0] * largest_basins[1] * largest_basins[2];
 }
 
+uint64_t d10t1(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day10.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::stack<char> st;
+    uint64_t res = 0;
+    for (const auto& str: vec){
+        for (const char& ch : str){
+            bool break_cond = false;
+            if (st.empty() && !((ch == '}') || (ch == ')') || (ch==']') || (ch=='>'))){
+                st.push(ch);
+            } else {
+                switch (ch){
+                    case ')':
+                        if (st.empty() || st.top() != '('){
+                            res+=3;
+                            break_cond = true;
+                        } else
+                            st.pop();
+                        break;
+                    case ']':
+                        if (st.empty() || st.top() != '['){
+                            res+=57;
+                            break_cond = true;
+                        } else
+                            st.pop();
+                        break;
+                    case '}':
+                        if (st.empty() || st.top() != '{'){
+                            res+=1197;
+                            break_cond = true;
+                        } else
+                            st.pop();
+                        break;
+                    case '>':
+                        if (st.empty() || st.top() != '<'){
+                            res+=25137;
+                            break_cond = true;
+                        } else
+                            st.pop();
+                        break;
+                    default:
+                        st.push(ch);
+                        break;
+                }
+            }
+            if (break_cond)
+                break;
+        }
+    }
+    return res;
+}
+uint64_t d10t2(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day10.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::map<char,int> valpairs{{'(',1}, {'[',2},{'{', 3},{'<',4}};
+
+    erase_if(vec,[](std::string& str){
+        std::stack<char> st;
+        for (const char& ch : str){
+            if (st.empty() && !((ch == '}') || (ch == ')') || (ch==']') || (ch=='>'))){
+                st.push(ch);
+            } else {
+                switch (ch){
+                    case ')':
+                        if (st.empty() || st.top() != '('){
+                            return true;
+                        } else
+                            st.pop();
+                        break;
+                    case ']':
+                        if (st.empty() || st.top() != '['){
+                            return true;
+                        } else
+                            st.pop();
+                        break;
+                    case '}':
+                        if (st.empty() || st.top() != '{'){
+                            return true;
+                        } else
+                            st.pop();
+                        break;
+                    case '>':
+                        if (st.empty() || st.top() != '<'){
+                            return true;
+                        } else
+                            st.pop();
+                        break;
+                    default:
+                        st.push(ch);
+                        break;
+                }
+            }
+        }
+        return false;
+    }); // Clears corrupted lines
+
+    /*for (const auto& a : vec){
+        std::cout << a << std::endl;
+    }*/
+
+    std::vector<uint64_t> total_scores;
+
+    for (const std::string& str : vec){
+        uint64_t res = 0;
+        std::deque<char> dq;
+        for (const char& ch : str){
+            if (ch == ')' || ch == ']' || ch == '}' || ch == '>')
+                dq.pop_back();
+            else
+                dq.push_back(ch);
+        }
+
+        std::reverse(dq.begin(), dq.end());
+
+        for (const char& ch : dq){
+            res *= 5;
+            res += valpairs.at(ch);
+        }
+        total_scores.push_back(res);
+    }
+
+    std::sort(total_scores.begin(),total_scores.end());
+
+    return total_scores.at((total_scores.size()-1)/2);
+}
+
 int main() {
 
     uint64_t res;
@@ -1105,7 +1236,7 @@ int main() {
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
-    */
+
     // Day 9
     {
         std::cout << "================== Day 9 ==================" << std::endl;
@@ -1122,6 +1253,22 @@ int main() {
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
-
+    */
+    // Day 10
+    {
+        std::cout << "================== Day 10 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d10t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d10t2();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
     return 0;
 }
