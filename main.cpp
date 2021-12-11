@@ -39,6 +39,7 @@ std::vector<double> divide_string(std::string str){
     ret.push_back(std::stoi(str.substr(last,str.npos)));
     return ret;
 }
+
 std::string string_diff(std::string str1, std::string str2){
     std::string k = str2;
     for (const char& ch : k){
@@ -65,6 +66,7 @@ bool same_different_order(std::string container, std::string str2){
                   };
     return asd[0] && asd[1] && asd[2];
 }
+
 uint64_t sum_of_basin(std::array<std::array<int,100>,100>& map, std::vector<std::pair<int,int>>& visited, size_t i, size_t j) {
 
     if (map[i][j] == 9 ||
@@ -82,6 +84,67 @@ uint64_t sum_of_basin(std::array<std::array<int,100>,100>& map, std::vector<std:
         sum += sum_of_basin(map, visited, i, j + 1);
 
     return sum;
+}
+
+struct Octopus{
+    bool flashed = false;
+    size_t energy;
+    Octopus(size_t e){
+        this->energy = e;
+    }
+    Octopus()=default;
+};
+uint64_t sum_of_flashes(std::array<std::array<Octopus,10>,10>& map){
+
+    bool flash = true;
+    uint64_t flashes = 0;
+
+    // Inc by 1
+    for (size_t i{0}; i < 10; ++i)
+        for (size_t j{0}; j < 10; ++j)
+            map[i][j].energy++;
+
+    while (flash){
+        // Flashing
+        size_t cnt2 = 0;
+        for (size_t i{0}; i < 10; ++i){
+            size_t cnt1 = 0;
+            for (size_t j{0}; j < 10; ++j){
+                if (map[i][j].energy > 9 && !map[i][j].flashed){
+                    map[i][j].flashed = true;
+                    if (i > 0)
+                        map[i-1][j].energy++;
+                    if (j > 0)
+                        map[i][j-1].energy++;
+                    if (i < 9)
+                        map[i+1][j].energy++;
+                    if (j < 9)
+                        map[i][j+1].energy++;
+                    if (i > 0 && j > 0)
+                        map[i-1][j-1].energy++;
+                    if (i > 0 && j < 9)
+                        map[i-1][j+1].energy++;
+                    if (i < 9 && j > 0)
+                        map[i+1][j-1].energy++;
+                    if (i < 9  && j < 9)
+                        map[i+1][j+1].energy++;
+                } else
+                    cnt1++;
+            }
+            if (cnt1 == 10)
+                cnt2++;
+        }
+        if (cnt2 == 10){
+            flash = false;
+            for (size_t i{0}; i < 10; ++i)
+                for (size_t j{0}; j < 10; ++j)
+                    if (map[i][j].flashed){
+                        map[i][j] = 0;
+                        flashes++;
+                    }
+        }
+    }
+    return flashes;
 }
 // For day 4
 struct TableElement{
@@ -1071,12 +1134,7 @@ uint64_t d10t2(){
         return false;
     }); // Clears corrupted lines
 
-    /*for (const auto& a : vec){
-        std::cout << a << std::endl;
-    }*/
-
     std::vector<uint64_t> total_scores;
-
     for (const std::string& str : vec){
         uint64_t res = 0;
         std::deque<char> dq;
@@ -1101,13 +1159,46 @@ uint64_t d10t2(){
     return total_scores.at((total_scores.size()-1)/2);
 }
 
+uint64_t d11t1(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day11.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::array<std::array<Octopus,10>,10> map;
+    for (size_t i{0}; i < vec.size(); ++i)
+        for (size_t j{0}; j < vec.at(i).size(); ++j)
+            map[i][j] = Octopus(static_cast<int>(vec.at(i).at(j)) - 48);
+
+    uint64_t res = 0;
+    for (size_t i{0}; i < 100; ++i)
+        res += sum_of_flashes(map);
+
+    return res;
+}
+uint64_t d11t2(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day11.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::array<std::array<Octopus,10>,10> map;
+    for (size_t i{0}; i < vec.size(); ++i)
+        for (size_t j{0}; j < vec.at(i).size(); ++j)
+            map[i][j] = Octopus(static_cast<int>(vec.at(i).at(j)) - 48);
+
+    uint64_t cnt = 1;
+    while (sum_of_flashes(map) != 100)
+        cnt++;
+
+    return cnt;
+}
+
 int main() {
 
     uint64_t res;
     std::chrono::time_point<std::chrono::system_clock> start,end;
     std::chrono::duration<double> elapsed_seconds;
 
-    /*
+
     // Day 1
     {
         std::cout << "================== Day 1 ==================" << std::endl;
@@ -1253,7 +1344,6 @@ int main() {
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
-    */
     // Day 10
     {
         std::cout << "================== Day 10 ==================" << std::endl;
@@ -1270,5 +1360,23 @@ int main() {
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
+    // Day 11
+    {
+        std::cout << "================== Day 11 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d11t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d11t2();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
+
+
     return 0;
 }
