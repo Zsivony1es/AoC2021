@@ -99,6 +99,8 @@ uint64_t sum_of_flashes(std::array<std::array<Octopus,10>,10>& map){
     bool flash = true;
     uint64_t flashes = 0;
 
+    Octopus oct = 3;
+
     // Inc by 1
     for (size_t i{0}; i < 10; ++i)
         for (size_t j{0}; j < 10; ++j)
@@ -139,13 +141,56 @@ uint64_t sum_of_flashes(std::array<std::array<Octopus,10>,10>& map){
             for (size_t i{0}; i < 10; ++i)
                 for (size_t j{0}; j < 10; ++j)
                     if (map[i][j].flashed){
-                        map[i][j] = 0;
+                        map[i][j].energy = 0;
+                        map[i][j].flashed = false;
                         flashes++;
                     }
         }
     }
     return flashes;
 }
+
+template<typename T>
+struct LinkedList{
+    T val;
+    LinkedList<T>* next;
+};
+
+struct Node{
+    std::string val;
+    std::vector<Node*> conns;
+    size_t visited = 0;
+    bool isLarge;
+
+    Node(std::string val){ this->val = val; isLarge = val.at(0) >= 'A' && val.at(0) <= 'Z'; }
+
+    static uint64_t count_routes1(Node& node){
+        uint64_t cnt = 0;
+        node.visited++;
+        for (auto& child : node.conns){
+            if (child->val == "end")
+                cnt++;
+            else if (child->visited == 0 || child->isLarge)
+                cnt += count_routes1(*child);
+        }
+        node.visited--;
+        return cnt;
+    }
+    static uint64_t count_routes2(Node& node, const std::string& twice_name){
+        uint64_t cnt = 0;
+        node.visited++;
+        for (auto& child : node.conns){
+            if (child->val == "end")
+                cnt++;
+            else if (child->visited < 1 || child->isLarge || (child->visited < 2 && child->val == twice_name) )
+                cnt += count_routes2(*child, twice_name);
+        }
+        node.visited--;
+        return cnt;
+    }
+
+};
+
 // For day 4
 struct TableElement{
     bool called;
@@ -1192,12 +1237,92 @@ uint64_t d11t2(){
     return cnt;
 }
 
+uint64_t d12t1(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day12.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::map<std::string,Node> nodes;
+
+    // Setting our map
+    for (const auto& str : vec){
+        size_t index;
+        for (size_t i{0}; i < str.size(); ++i)
+            if (str[i] == '-'){
+                index = i;
+                break;
+            }
+        std::string st1 = str.substr(0,index),
+                    st2 = str.substr(index+1,std::string::npos);
+
+        if (!nodes.contains(st1))
+            nodes.insert(std::pair<std::string,Node>(st1,Node(st1)));
+        if (!nodes.contains(st2))
+            nodes.insert(std::pair<std::string,Node>(st2,Node(st2)));
+
+        nodes.at(st1).conns.push_back(&nodes.at(st2));
+        nodes.at(st2).conns.push_back(&nodes.at(st1));
+    }
+
+    return Node::count_routes1(nodes.at("start"));
+
+}
+uint64_t d12t2(){
+
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day12.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::map<std::string,Node> nodes;
+
+    // Setting our map
+    for (const auto& str : vec){
+        size_t index;
+        for (size_t i{0}; i < str.size(); ++i)
+            if (str[i] == '-'){
+                index = i;
+                break;
+            }
+        std::string st1 = str.substr(0,index),
+                st2 = str.substr(index+1,std::string::npos);
+
+        if (!nodes.contains(st1))
+            nodes.insert(std::pair<std::string,Node>(st1,Node(st1)));
+        if (!nodes.contains(st2))
+            nodes.insert(std::pair<std::string,Node>(st2,Node(st2)));
+
+        nodes.at(st1).conns.push_back(&nodes.at(st2));
+        nodes.at(st2).conns.push_back(&nodes.at(st1));
+    }
+
+
+    uint64_t to_sub = Node::count_routes1(nodes.at("start"));
+    uint64_t res = to_sub;
+    for (auto& el : nodes){
+        if (el.first != "start" && el.first != "end" && !el.second.isLarge)
+            res += ( Node::count_routes2(nodes.at("start"),el.first) - to_sub );
+    }
+
+    return res;
+
+}
+
+uint64_t d13t1(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day13.txt");
+    std::vector<std::string> vec = read_from_file(file);
+}
+uint64_t d13t2(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day13.txt");
+    std::vector<std::string> vec = read_from_file(file);
+}
+
 int main() {
 
     uint64_t res;
     std::chrono::time_point<std::chrono::system_clock> start,end;
     std::chrono::duration<double> elapsed_seconds;
-
 
     // Day 1
     {
@@ -1327,7 +1452,6 @@ int main() {
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
-
     // Day 9
     {
         std::cout << "================== Day 9 ==================" << std::endl;
@@ -1372,6 +1496,38 @@ int main() {
         std::cout << "Task 2:" << std::endl;
         start = std::chrono::system_clock::now();
         res = d11t2();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
+    // Day 12
+    {
+        std::cout << "================== Day 12 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d12t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d12t2();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
+    // Day 13
+    {
+        std::cout << "================== Day 13 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d13t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d13t2();
         end = std::chrono::system_clock::now();
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
