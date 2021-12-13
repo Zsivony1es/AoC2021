@@ -287,6 +287,7 @@ public:
     std::string to_string() const{
         return reinterpret_cast<const char *>('(' + x + ',' + y + ')');
     }
+    bool operator==(const Point& p) const{return this->x == p.x && this->y == p.y;}
 };
 class Line{
 public:
@@ -339,6 +340,74 @@ std::ostream& operator<<(std::ostream& os, const Point& p){
 }
 std::ostream& operator<<(std::ostream& os, const Line& l){
     return os << l.begin << " -> " << l.end;
+}
+
+uint64_t day13solver(std::vector<Point>& points, std::vector<std::string>& folds){
+    size_t lastx=1, lasty=1;
+    for (const auto& f : folds) {
+        size_t num = std::stoi(f.substr(2, std::string::npos));
+        if (f.at(0) == 'x') {
+            lastx = num;
+            std::vector<Point> to_transform;
+            for (const Point &p: points)
+                if (p.x > num)
+                    to_transform.push_back(p);
+            points.erase(std::remove_if(points.begin(), points.end(), [&num](Point p) { return p.x >= num; }),
+                         points.end());
+            for (const Point &p: to_transform) {
+                bool exists = false;
+                Point to_add = Point(num - (p.x - num), p.y);
+                for (const Point &p1: points)
+                    if (p1 == to_add) {
+                        exists = true;
+                        break;
+                    }
+                if (!exists)
+                    points.push_back(to_add);
+            }
+
+        } else if (f.at(0) == 'y') {
+            lasty = num;
+            std::vector<Point> to_transform;
+            for (const Point &p: points)
+                if (p.y > num)
+                    to_transform.push_back(p);
+            points.erase(std::remove_if(points.begin(), points.end(), [&num](Point p) { return p.y >= num; }),
+                         points.end());
+            for (const Point &p: to_transform) {
+                bool exists = false;
+                Point to_add = Point(p.x, num - (p.y - num));
+                for (const Point &p1: points)
+                    if (p1 == to_add) {
+                        exists = true;
+                        break;
+                    }
+                if (!exists)
+                    points.push_back(to_add);
+            }
+        }
+        if (lasty != 1 && lastx != 1){
+            std::ofstream outfile;
+            outfile.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/outputs/day13.txt");
+
+            char img[lastx][lasty];
+            for (size_t i{0}; i < lastx; ++i)
+                for (size_t j{0}; j < lasty; ++j)
+                    img[i][j] = '.';
+
+            for (const auto &p: points)
+                img[p.x][p.y] = '#';
+
+            for (size_t j{0}; j < lasty; ++j) {
+                for (size_t i{0}; i < lastx; ++i)
+                    outfile << img[i][j];
+                outfile << std::endl;
+            }
+            outfile.close();
+        }
+    }
+
+    return points.size();
 }
 
 uint64_t d1t1(){
@@ -1311,11 +1380,54 @@ uint64_t d13t1(){
     std::ifstream file;
     file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day13.txt");
     std::vector<std::string> vec = read_from_file(file);
+
+    vec.erase(std::remove_if(vec.begin(),vec.end(),[](std::string str){return str == "fold" || str == "along";}),vec.end());
+
+    std::vector<Point> points;
+    std::vector<std::string> folds;
+
+    for (const auto& str : vec){
+        if ( (str.at(0) == 'x' || str.at(0) == 'y') && folds.empty()){
+            folds.push_back(str);
+        } else if ( str.at(0) != 'x' && str.at(0) != 'y') {
+            size_t index;
+            for (size_t i{0}; i < str.size(); ++i){
+                if (str.at(i) == ',')
+                    index = i;
+            }
+            points.emplace_back(std::stoi(str.substr(0,index)),std::stoi(str.substr(index+1,std::string::npos)));
+        }
+    }
+
+    return day13solver(points,folds);
+
 }
-uint64_t d13t2(){
+uint64_t d13t2() {
+
     std::ifstream file;
     file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day13.txt");
     std::vector<std::string> vec = read_from_file(file);
+
+    vec.erase(std::remove_if(vec.begin(), vec.end(), [](std::string str) { return str == "fold" || str == "along"; }),
+              vec.end());
+
+    std::vector<Point> points;
+    std::vector<std::string> folds;
+
+    for (const auto &str: vec) {
+        if (str.at(0) == 'x' || str.at(0) == 'y') {
+            folds.push_back(str);
+        } else {
+            size_t index;
+            for (size_t i{0}; i < str.size(); ++i) {
+                if (str.at(i) == ',')
+                    index = i;
+            }
+            points.emplace_back(std::stoi(str.substr(0, index)), std::stoi(str.substr(index + 1, std::string::npos)));
+        }
+    }
+
+    return day13solver(points,folds);
 }
 
 int main() {
@@ -1530,9 +1642,8 @@ int main() {
         res = d13t2();
         end = std::chrono::system_clock::now();
         elapsed_seconds = end-start;
-        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Result: " << "EFJKZLBL (in outputs/day13.txt)" << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
-
 
     return 0;
 }
