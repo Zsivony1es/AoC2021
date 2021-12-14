@@ -1430,6 +1430,82 @@ uint64_t d13t2() {
     return day13solver(points,folds);
 }
 
+uint64_t d14(size_t loops){
+
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day14.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::string temp = vec.at(0);
+
+    std::map<std::string,char> rules;
+    std::map<std::string,int64_t> amount_of_pairs;
+
+    for (size_t i{1}; i < vec.size(); i+=3){
+        rules.insert(std::pair<std::string,char>(vec.at(i),vec.at(i+2)[0] ));
+        amount_of_pairs.insert(std::pair<std::string,int64_t>(vec.at(i), 0));
+    }
+
+    for (size_t i{0}; i < temp.size(); ++i){
+        std::string as = std::string(1, temp[i]) + std::string(1, temp[i+1]);
+        if (amount_of_pairs.contains(as))
+            amount_of_pairs.at(as)++;
+    }
+
+    std::map<std::string,int64_t> changes;
+    for (const auto& el : amount_of_pairs){
+        changes.insert(std::pair<std::string,int64_t>(el.first,0));
+    }
+
+    for (size_t i{0}; i < loops; ++i) {
+
+        // Reset changes
+        for (auto& el : changes)
+            el.second = 0;
+
+
+        for (auto& el : amount_of_pairs) {
+            std::string first = std::string(1,el.first[0]),
+                        last = std::string(1,el.first[1]),
+                        mid = std::string(1,rules.at(el.first));
+            int64_t a = amount_of_pairs.at(first+last);
+
+            changes.at(first+last) -= a;
+            changes.at(first+mid) += a;
+            changes.at(mid+last) += a;
+        }
+
+        // Commit changes
+        for (const auto& el : changes)
+            amount_of_pairs.at(el.first) += el.second;
+
+    }
+
+    std::map<char,uint64_t> amount;
+    for (const auto& el : amount_of_pairs){
+        if (!amount.contains(el.first[0]))
+            amount.insert(std::pair<char,uint64_t>(el.first[0],el.second));
+        else
+            amount.at(el.first[0]) += el.second;
+        if (!amount.contains(el.first[1]))
+            amount.insert(std::pair<char,uint64_t>(el.first[1],el.second));
+        else
+            amount.at(el.first[1])+=el.second;
+
+    }
+
+    uint64_t max=0, min=INT64_MAX;
+    for (const auto& el : amount){
+        if (el.second > max)
+            max = el.second;
+        if (el.second < min)
+            min = el.second;
+    }
+
+    return (max-min-1)/2;
+
+}
+
 int main() {
 
     uint64_t res;
@@ -1643,6 +1719,22 @@ int main() {
         end = std::chrono::system_clock::now();
         elapsed_seconds = end-start;
         std::cout << "Result: " << "EFJKZLBL (in outputs/day13.txt)" << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
+    // Day 14
+    {
+        std::cout << "================== Day 14 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d14(10);
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d14(40);
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
 
     return 0;
