@@ -1506,6 +1506,114 @@ uint64_t d14(size_t loops){
 
 }
 
+uint64_t d15t1(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day15.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::array<std::array<size_t,100>,100> map;
+    for (size_t i{0}; i < vec.size(); ++i){
+        for (size_t j{0}; j < vec.at(i).size(); ++j){
+            map[i][j] = vec[i][j] - 48;
+        }
+    }
+
+    std::array<std::array<size_t,100>,100> algomap;
+    for (size_t i{0}; i < 100; ++i){
+        for (size_t j{0}; j < 100; ++j){
+            algomap[i][j] = SIZE_T_MAX;
+        }
+    }
+    algomap[0][0] = 0;
+
+    for (size_t k{0}; k < 3; k++) { // Not proud of this one, but it works XD
+        for (size_t i{0}; i < 100; ++i) {
+            for (size_t j{0}; j < 100; ++j) {
+                if (i < 99)
+                    if (algomap[i][j] + map[i + 1][j] < algomap[i + 1][j])
+                        algomap[i + 1][j] = algomap[i][j] + map[i + 1][j];
+                if (i > 0)
+                    if (algomap[i][j] + map[i - 1][j] < algomap[i - 1][j])
+                        algomap[i - 1][j] = algomap[i][j] + map[i - 1][j];
+                if (j < 99)
+                    if (algomap[i][j] + map[i][j + 1] < algomap[i][j + 1])
+                        algomap[i][j + 1] = algomap[i][j] + map[i][j + 1];
+                if (j > 0)
+                    if (algomap[i][j] + map[i][j - 1] < algomap[i][j - 1])
+                        algomap[i][j - 1] = algomap[i][j] + map[i][j - 1];
+            }
+        }
+    }
+
+    return algomap[99][99];
+
+}
+uint64_t d15t2(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day15.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::array<std::array<size_t,100>,100> map_old;
+    for (size_t i{0}; i < vec.size(); ++i){
+        for (size_t j{0}; j < vec.at(i).size(); ++j){
+            map_old[i][j] = vec[i][j] - 48;
+        }
+    }
+
+    // Create bigger map
+    std::array<std::array<size_t,500>,500> map;
+    for (size_t i{0}; i < 100; ++i){
+        for (size_t j{0}; j < 100; ++j){
+
+            std::array<std::array<size_t,5>,5> ij;
+            for (size_t k{0}; k < 5; ++k){
+                for (size_t l{0}; l < 5; ++l){
+                    if (k == 0 && l == 0)
+                        ij[k][l] = map_old[i][j];
+                    else if (k > 0)
+                        ij[k][l] = (ij[k-1][l] + 1 == 10) ? 1 : ij[k-1][l] + 1;
+                    else if (l > 0)
+                        ij[k][l] = (ij[k][l-1] + 1 == 10) ? 1 : ij[k][l-1] + 1;
+                }
+            }
+
+            for (size_t k{0}; k < 5; ++k)
+                for (size_t l{0}; l < 5; ++l)
+                    map[k*100+i][l*100+j] = ij[k][l];
+
+        }
+    }
+
+    std::array<std::array<size_t,500>,500> algomap;
+    for (size_t i{0}; i < 500; ++i){
+        for (size_t j{0}; j < 500; ++j){
+            algomap[i][j] = SIZE_T_MAX;
+        }
+    }
+    algomap[0][0] = 0;
+
+    for (size_t k{0}; k < 3; k++) { // Not proud of this one, but it works XD
+        for (size_t i{0}; i < 500; ++i)
+            for (size_t j{0}; j < 500; ++j){
+                if (i < 499)
+                    if (algomap[i][j] + map[i+1][j] < algomap[i+1][j])
+                        algomap[i+1][j] = algomap[i][j] + map[i+1][j];
+                if (i > 0)
+                    if (algomap[i][j] + map[i-1][j] < algomap[i-1][j])
+                        algomap[i-1][j] = algomap[i][j] + map[i-1][j];
+                if (j < 499)
+                    if (algomap[i][j] + map[i][j+1] < algomap[i][j+1])
+                        algomap[i][j+1] = algomap[i][j] + map[i][j+1];
+                if (j > 0)
+                    if (algomap[i][j] + map[i][j-1] < algomap[i][j-1])
+                        algomap[i][j-1] = algomap[i][j] + map[i][j-1];
+            }
+    }
+
+    return algomap[499][499];
+
+}
+
 int main() {
 
     uint64_t res;
@@ -1732,6 +1840,22 @@ int main() {
         std::cout << "Task 2:" << std::endl;
         start = std::chrono::system_clock::now();
         res = d14(40);
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
+    // Day 15
+    {
+        std::cout << "================== Day 15 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d15t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d15t2();
         end = std::chrono::system_clock::now();
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
