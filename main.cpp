@@ -7,6 +7,8 @@
 #include <chrono>
 #include <array>
 #include <map>
+#include <bitset>
+#include <sstream>
 
 #define NC "\e[0m"
 #define RED "\e[0;31m"
@@ -408,6 +410,83 @@ uint64_t day13solver(std::vector<Point>& points, std::vector<std::string>& folds
     }
 
     return points.size();
+}
+
+uint64_t parse_packet(const std::string& bin, int& cnt, std::vector<uint64_t>& version_nums){
+
+    version_nums.push_back(std::bitset<3>(bin.substr(cnt,cnt+3)).to_ulong());
+    cnt+=3;
+    int packet_type = std::bitset<3>(bin.substr(cnt,cnt+3)).to_ulong();
+    cnt+=3;
+
+    if (packet_type == 4){
+        std::string num;
+        while (true){
+            num += bin.substr(cnt+1,4);
+            if (bin[cnt] == '0'){
+                cnt += 5;
+                break;
+            }
+            cnt += 5;
+        }
+        uint64_t res = 0;
+        for (size_t i{0}; i < num.size(); ++i)
+            if (num[i] == '1')
+                res += pow(2,num.size()-1-i);
+
+        return res;
+    }
+
+    cnt++;
+    std::vector<uint64_t> ret;
+    if (bin[cnt-1] == '1'){
+
+        size_t loops = std::bitset<11>(bin.substr(cnt,cnt+11)).to_ulong();
+        cnt += 11;
+
+        for (size_t i{0}; i < loops; ++i)
+            ret.push_back(parse_packet(bin, cnt, version_nums));
+
+    } else {
+
+        uint64_t length = std::bitset<15>(bin.substr(cnt,cnt+15)).to_ulong();
+        cnt += 15;
+
+        size_t asd = cnt;
+        while (int(cnt)-int(asd) < length)
+            ret.push_back(parse_packet(bin, cnt, version_nums));
+
+    }
+
+    uint64_t to_ret = 0;
+
+    switch (packet_type){
+        case 0:
+            std::for_each(ret.begin(), ret.end(), [&to_ret](auto n){to_ret += n;});
+            break;
+        case 1:
+            to_ret = 1;
+            std::for_each(ret.begin(), ret.end(), [&to_ret](auto n){to_ret *= n;});
+            break;
+        case 2:
+            to_ret = *std::min_element(ret.begin(), ret.end());
+            break;
+        case 3:
+            to_ret = *std::max_element(ret.begin(), ret.end());
+            break;
+        case 5:
+            to_ret = (ret.at(0) > ret.at(1));
+            break;
+        case 6:
+            to_ret = (ret.at(0) < ret.at(1));
+            break;
+        case 7:
+            to_ret = (ret.at(0) == ret.at(1));
+            break;
+    }
+
+   return to_ret;
+
 }
 
 uint64_t d1t1(){
@@ -1614,6 +1693,60 @@ uint64_t d15t2(){
 
 }
 
+uint64_t d16t1(){
+
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day16.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::string bin;
+    for (const char& ch : vec.at(0)){
+        int n;
+        std::istringstream(std::string(1,ch)) >> std::hex >> n;
+        auto a = std::bitset<4>(n);
+        for (size_t i{4}; i > 0; --i){
+            if (a[i-1])
+                bin += '1';
+            else
+                bin += '0';
+        }
+    }
+
+    int cnt = 0;
+    std::vector<uint64_t> version_nums;
+    parse_packet(bin, cnt, version_nums);
+
+    uint64_t ret = 0;
+    std::for_each(version_nums.begin(), version_nums.end(), [&ret](const auto& item){ret += item;});
+    return ret;
+
+}
+uint64_t d16t2(){
+
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day16.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    std::string bin;
+    for (const char& ch : vec.at(0)){
+        int n;
+        std::istringstream(std::string(1,ch)) >> std::hex >> n;
+        auto a = std::bitset<4>(n);
+        for (size_t i{4}; i > 0; --i){
+            if (a[i-1])
+                bin += '1';
+            else
+                bin += '0';
+        }
+    }
+
+    int cnt = 0;
+    std::vector<uint64_t> nums;
+
+    return parse_packet(bin, cnt, nums);
+
+}
+
 int main() {
 
     uint64_t res;
@@ -1856,6 +1989,22 @@ int main() {
         std::cout << "Task 2:" << std::endl;
         start = std::chrono::system_clock::now();
         res = d15t2();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
+    // Day 16
+    {
+        std::cout << "================== Day 16 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d16t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d16t2();
         end = std::chrono::system_clock::now();
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
