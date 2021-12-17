@@ -1,4 +1,7 @@
 # Advent of Code 2021
+
+![Code Christmas Tree](https://www.caphyon.ro/wp-content/uploads/2020/11/advent-code-1-1024x647.png)
+
 #### My Solutions for the problems in Advent of Code 2021
 
 ### UPDATE - 2021.12.17
