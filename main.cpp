@@ -1747,6 +1747,89 @@ uint64_t d16t2(){
 
 }
 
+uint64_t d17t1(){
+
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day17.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    int area_x[2] = {std::stoi(vec.at(2).substr(2,5)), std::stoi(vec.at(2).substr(7,10))},
+        area_y[2] = {std::stoi(vec.at(3).substr(2,5)), std::stoi(vec.at(3).substr(7,10))};
+
+    int acutal_max = INT_MIN;
+    for (int i{0}; i < 100; ++i){
+        for (int j{0}; j < 100; ++j){
+
+            Point curr = Point();
+            bool bullseye = false;
+            Point velocity = Point(i,j);
+            int max = INT_MIN;
+
+            while (curr.y > area_y[0]){
+                if (max < curr.y)
+                    max = curr.y;
+
+                curr.x += velocity.x;
+                curr.y += velocity.y;
+                if (velocity.x > 0)
+                    velocity.x--;
+                else if (velocity.x < 0)
+                    velocity.x++;
+                velocity.y--;
+
+                if (curr.x >= area_x[0] && curr.x <= area_x[1] && curr.y >= area_y[0] && curr.y <= area_y[1]){
+                    bullseye = true;
+                    break;
+                }
+            }
+
+            if (max > acutal_max && bullseye)
+                acutal_max = max;
+
+        }
+    }
+
+    return acutal_max;
+
+}
+uint64_t d17t2(){
+    std::ifstream file;
+    file.open("/Users/peterivony/Documents/VSCode Projects/AdventOfCode/inputs/day17.txt");
+    std::vector<std::string> vec = read_from_file(file);
+
+    int area_x[2] = {std::stoi(vec.at(2).substr(2,5)), std::stoi(vec.at(2).substr(7,10))},
+            area_y[2] = {std::stoi(vec.at(3).substr(2,5)), std::stoi(vec.at(3).substr(7,10))};
+
+    uint64_t cnt = 0;
+
+    for (int i{0}; i < area_x[1]+1; ++i){
+        for (int j{area_y[0]-20}; j < 99; ++j){
+
+            Point curr = Point();
+            Point velocity = Point(i,j);
+
+            while (curr.y >= area_y[0]){
+
+                curr.x += velocity.x;
+                curr.y += velocity.y;
+                if (velocity.x > 0)
+                    velocity.x--;
+                else if (velocity.x < 0)
+                    velocity.x++;
+                velocity.y--;
+
+                if (curr.x >= area_x[0] && curr.x <= area_x[1] && curr.y >= area_y[0] && curr.y <= area_y[1]){
+                    cnt++;
+                    break;
+                }
+            }
+
+        }
+    }
+
+    return cnt;
+}
+
 int main() {
 
     uint64_t res;
@@ -2005,6 +2088,22 @@ int main() {
         std::cout << "Task 2:" << std::endl;
         start = std::chrono::system_clock::now();
         res = d16t2();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
+    // Day 17
+    {
+        std::cout << "================== Day 17 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d17t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = d17t2();
         end = std::chrono::system_clock::now();
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
