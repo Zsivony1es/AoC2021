@@ -280,6 +280,22 @@ int main() {
         elapsed_seconds = end-start;
         std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
     }
+    // Day 18
+    {
+        std::cout << "================== Day 18 ==================" << std::endl;
+        std::cout << "Task 1:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = Solvers::d18t1();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+        std::cout << "Task 2:" << std::endl;
+        start = std::chrono::system_clock::now();
+        res = Solvers::d18t2();
+        end = std::chrono::system_clock::now();
+        elapsed_seconds = end-start;
+        std::cout << "Result: " << res << "\t\tTime elapsed: " << elapsed_seconds.count()*1000 << "ms"<< std::endl;
+    }
 
     return 0;
 }
