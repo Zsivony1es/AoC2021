@@ -24,6 +24,10 @@ public:
     static uint64_t sum_of_flashes(std::array<std::array<Structures::Octopus,10>,10>& map);
     static uint64_t day13solver(std::vector<Structures::Point>& points, std::vector<std::string>& folds);
     static uint64_t parse_packet(const std::string& bin, int& cnt, std::vector<uint64_t>& version_nums);
+    static bool reduce_snailnum(std::string& str);
+    static bool explode(std::string &str);
+    static bool split(std::string &str);
+    static uint64_t get_magnitude(const std::string &str);
 };
 
 

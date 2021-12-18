@@ -1345,10 +1345,57 @@ uint64_t Solvers::d17t2(){
 }
 
 uint64_t Solvers::d18t1() {
-    return 0;
+
+    std::ifstream file;
+    file.open("../inputs/day18.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    std::string snailnum = vec.at(0);
+
+    for (size_t i{1}; i < vec.size(); ++i){
+        snailnum = "[" + snailnum;
+        snailnum += "," + vec.at(i) + "]";
+
+        while (true){
+            while (Helpers::explode(snailnum))
+                continue;
+            bool k = Helpers::split(snailnum);
+            if (!k)
+                break;
+        }
+
+    }
+
+    return Helpers::get_magnitude(snailnum);
+
 }
 uint64_t Solvers::d18t2() {
-    return 0;
+
+    std::ifstream file;
+    file.open("../inputs/day18.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    uint64_t max = 0;
+    for (size_t i{0}; i < vec.size(); ++i){
+        for (size_t j{0}; j < vec.size(); ++j){
+            if (i != j){
+                std::string num1 = "[" + vec.at(i);
+                num1 += "," + vec.at(j) + "]";
+                while (true){
+                    while (Helpers::explode(num1))
+                        continue;
+                    bool k = Helpers::split(num1);
+                    if (!k)
+                        break;
+                }
+                if (Helpers::get_magnitude(num1) > max)
+                    max = Helpers::get_magnitude(num1);
+            }
+        }
+    }
+
+    return max;
+
 }
 
 uint64_t Solvers::d19t1() {
