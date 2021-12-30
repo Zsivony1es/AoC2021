@@ -10,9 +10,11 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <stdexcept>
 
 #define NC "\e[0m"
 #define RED "\e[0;31m"
+#define GREEN "\e[0;92m"
 
 class Structures {
 public:
@@ -56,7 +58,18 @@ public:
         Point(const Point& p);
         [[nodiscard]] std::string to_string() const;
         bool operator==(const Point& p) const;
+        Point operator-(const Point& p) const;
         friend std::ostream& operator<<(std::ostream& os, const Structures::Point& p);
+    };
+    struct Point3D{
+        int x = 0, y = 0, z = 0;
+        Point3D() = default;
+        Point3D(int x,int y, int z);
+        Point3D(const Point3D& p);
+        [[nodiscard]] std::string to_string() const;
+        bool operator==(const Point3D& p) const;
+        Point3D operator-(const Point3D& p) const;
+        friend std::ostream& operator<<(std::ostream& os, const Structures::Point3D& p);
     };
     struct Line{
         Structures::Point begin, end;
@@ -65,7 +78,12 @@ public:
         [[nodiscard]] std::vector<Structures::Point> getAllPoints() const;
         friend std::ostream& operator<<(std::ostream& os, const Line& l);
     };
-
+    struct Dice100{
+        size_t val;
+        uint64_t total_throws;
+        Dice100();
+        size_t throw_dice();
+    };
 
 
 };

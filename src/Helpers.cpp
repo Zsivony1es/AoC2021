@@ -21,20 +21,6 @@ std::vector<std::string> Helpers::read_from_file(std::ifstream& file){
 
     return to_return;
 }
-std::vector<double> Helpers::divide_string(std::string str){
-    std::vector<double> ret;
-    size_t last=0;
-
-    for (size_t i{0}; i < str.size(); ++i){
-        if (str.at(i) == ','){
-            ret.push_back(std::stoi(str.substr(last,i)));
-            last = i+1;
-        }
-    }
-
-    ret.push_back(std::stoi(str.substr(last,str.npos)));
-    return ret;
-}
 std::string Helpers::string_diff(std::string str1, std::string str2){
     std::string k = str2;
     for (const char& ch : k){
@@ -63,6 +49,20 @@ bool Helpers::same_different_order(std::string container, std::string str2){
 }
 
 // Specific
+std::vector<double> Helpers::divide_string(std::string str){
+    std::vector<double> ret;
+    size_t last=0;
+
+    for (size_t i{0}; i < str.size(); ++i){
+        if (str.at(i) == ','){
+            ret.push_back(std::stoi(str.substr(last,i)));
+            last = i+1;
+        }
+    }
+
+    ret.push_back(std::stoi(str.substr(last,str.npos)));
+    return ret;
+}
 uint64_t Helpers::sum_of_basin(std::array<std::array<int,100>,100>& map, std::vector<std::pair<int,int>>& visited, size_t i, size_t j) {
 
     if (map[i][j] == 9 ||
@@ -421,4 +421,103 @@ uint64_t Helpers::get_magnitude(const std::string& str){
 
     return 3*Helpers::get_magnitude(str.substr(1,comma_loc-1)) + 2*Helpers::get_magnitude(str.substr(comma_loc+1,str.size()-comma_loc-2));
 
+}
+std::vector<std::string> Helpers::enhance_image(const std::string &img_alg, std::vector<std::string> vec, bool even) {
+
+    std::vector<std::string> output_img;
+    char outside = even ? '.' : '#';
+    for (size_t i{0}; i < vec.size()+2; ++i){
+        std::string asd;
+        for (size_t j{0}; j < vec.size()+2; ++j)
+            asd += outside;
+        output_img.push_back(asd);
+    }
+
+    std::string dotrow, twochars = std::string(1,outside) + std::string(1,outside);
+    for (size_t i{0}; i < vec.size()+4; ++i)
+        dotrow += outside;
+    vec.insert(vec.begin(),dotrow);
+    vec.insert(vec.begin(),dotrow);
+    for (size_t i{2}; i < vec.size(); ++i)
+        vec[i] = twochars + vec[i] + twochars;
+    vec.insert(vec.end(), dotrow);
+    vec.insert(vec.end(), dotrow);
+
+    for (size_t i{1}; i < vec.size()-1; ++i){
+        for (size_t j{1}; j < vec.size()-1; ++j) {
+            std::string row = vec[i - 1].substr(j - 1, 3) + vec[i].substr(j - 1, 3) + vec[i + 1].substr(j - 1, 3);
+            size_t num = 0;
+            for (size_t k{0}; k < row.size(); ++k)
+                if (row[k] == '#')
+                    num += pow(2, row.size()-k-1);
+            output_img[i-1][j-1] = img_alg[num];
+        }
+    }
+
+    return output_img;
+
+}
+uint64_t Helpers::wins_in_universe(std::pair<size_t,size_t> scores, std::pair<size_t,size_t> pos, uint64_t universe_num, bool turn) {
+
+    if (scores.first > 20)
+        return 1;
+    if (scores.second > 20)
+        return 0;
+
+    for (uint8_t i{3}; i < 10; ++i){
+        size_t num;
+        switch (i){
+            case 4:
+            case 8:
+                num = 3;
+                break;
+            case 5:
+            case 7:
+                num = 6;
+                break;
+            case 6:
+                num = 7;
+                break;
+            case 3:
+            case 9:
+                num = 1;
+            default:
+                break;
+        }
+
+        if (turn){
+            pos.first = (pos.first + i) % 10;
+            scores.first += pos.first;
+            turn = false;
+        } else {
+            pos.second = (pos.second + i) % 10;
+            scores.second += pos.second;
+            turn = true;
+        }
+
+    }
+
+}
+uint64_t Helpers::search_for_monad(std::array<int, 14> l, std::array<int, 14> k, std::array<int, 14> m, const std::function <uint64_t (uint64_t, uint64_t)>& f) {
+
+    std::unordered_map<int64_t, uint64_t> z_vals;
+    std::unordered_map<int64_t, uint64_t> new_vals;
+    z_vals.insert(std::make_pair(0, 0));
+
+    for (int i{0}; i < 14; ++i){
+        for (const auto& z : z_vals){
+            for (int64_t dig{9}; dig > 0; dig--){
+                uint64_t new_possible_max = z.second*10 + dig;
+                int64_t znew = z.first / l[i];
+                if (dig != z.first % 26 + k[i])
+                    znew = znew * 26 + dig + m[i];
+                auto [it, placed] = new_vals.emplace(znew, new_possible_max);
+                if (!placed)
+                    it->second = f(new_possible_max, it->second);
+            }
+        }
+        z_vals = std::move(new_vals);
+    }
+
+    return z_vals.at(0);
 }

@@ -69,8 +69,21 @@ public:
     static uint64_t d19t1();
     static uint64_t d19t2();
 
-    static uint64_t d20t1();
-    static uint64_t d20t2();
+    static uint64_t d20(size_t enh_count);
+
+    static uint64_t d21t1();
+    static uint64_t d21t2();
+
+    static uint64_t d22t1();
+    static uint64_t d22t2();
+
+    static uint64_t d23t1();
+    static uint64_t d23t2();
+
+    static uint64_t d24t1();
+    static uint64_t d24t2();
+
+    static uint64_t d25t1();
 
 };
 

@@ -115,6 +115,30 @@ bool Structures::Point::operator==(const Structures::Point& p) const{return this
 std::ostream& operator<<(std::ostream& os, const Structures::Point& p){
     return os << '(' << p.x << ',' << p.y << ')';
 }
+Structures::Point Structures::Point::operator-(const Structures::Point& p) const{
+    return {this->x - p.x, this->y - p.y};
+}
+
+Structures::Point3D::Point3D(int x, int y, int z) {
+    this->x = x;
+    this->y = y;
+    this->z = z;
+}
+Structures::Point3D::Point3D(const Structures::Point3D& p){
+    this->x = p.x;
+    this->y = p.y;
+    this->z = p.z;
+}
+std::string Structures::Point3D::to_string() const{
+    return reinterpret_cast<const char *>('(' + x + ',' + y + ',' + z + ')');
+}
+bool Structures::Point3D::operator==(const Structures::Point3D& p) const{return this->x == p.x && this->y == p.y && this->z == p.z;}
+std::ostream& operator<<(std::ostream& os, const Structures::Point3D& p){
+    return os << '(' << p.x << ',' << p.y << ',' << p.z << ')';
+}
+Structures::Point3D Structures::Point3D::operator-(const Structures::Point3D& p) const{
+    return {this->x - p.x, this->y - p.y, this->z - p.z};
+}
 
 Structures::Line::Line(const Structures::Point& begin, const Structures::Point& end){
     this->begin = Structures::Point(begin.x, begin.y);
@@ -160,3 +184,15 @@ std::vector<Structures::Point> Structures::Line::getAllPoints() const {
 std::ostream& operator<<(std::ostream& os, const Structures::Line& l){
     return os << l.begin << " -> " << l.end;
 }
+
+Structures::Dice100::Dice100(){
+    this->val = 0;
+    this->total_throws = 0;
+}
+size_t Structures::Dice100::throw_dice() {
+    ++this->total_throws;
+    if (++this->val > 100)
+        this->val = 1;
+    return this->val;
+}
+

@@ -1399,15 +1399,382 @@ uint64_t Solvers::d18t2() {
 }
 
 uint64_t Solvers::d19t1() {
+
+    std::ifstream file;
+    file.open("../inputs/day19.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    std::vector<Structures::Point3D> rotations{Structures::Point3D(1,1,1), Structures::Point3D(-1,1,1), Structures::Point3D(1,-1,1),
+                                            Structures::Point3D(1,1,-1), Structures::Point3D(-1,-1,1), Structures::Point3D(1,-1,-1),
+                                            Structures::Point3D(-1,1,-1), Structures::Point3D(-1,-1,-1)};
+
+
+
+
+
     return 0;
 }
 uint64_t Solvers::d19t2() {
+
+    std::ifstream file;
+    file.open("../inputs/day19.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+
+
     return 0;
 }
 
-uint64_t Solvers::d20t1() {
+uint64_t Solvers::d20(size_t enh_count) {
+
+    std::ifstream file;
+    file.open("../inputs/day20.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    std::string proc_algo = vec.at(0);
+    vec.erase(vec.begin());
+
+    std::vector<std::string> output = vec;
+    if (proc_algo[0] == '#')
+        for (size_t i{0}; i < enh_count; ++i)
+            output = Helpers::enhance_image(proc_algo, output, i%2 == 0);
+    else
+        for (size_t i{0}; i < enh_count; ++i)
+            output = Helpers::enhance_image(proc_algo, output, true);
+
+
+    std::ofstream outfile;
+    outfile.open("../outputs/day20.txt");
+    for (const auto& row : output)
+        outfile << row << std::endl;
+    outfile.close();
+
+    uint64_t cnt = 0;
+    for (const auto& row : output)
+        for (const char& ch : row)
+            if (ch == '#')
+                cnt++;
+
+    return cnt;
+
+}
+
+uint64_t Solvers::d21t1(){
+
+    size_t pos[2] = {7,9}; // Initial - 1
+    uint64_t score[2] = {0,0};
+    Structures::Dice100 dice = Structures::Dice100();
+
+    while (true){
+        bool end = false;
+        for (size_t j{0}; j < 2; ++j){
+            size_t moves = 0;
+            for (size_t i{0}; i < 3; ++i)
+                moves += dice.throw_dice();
+            pos[j] = (pos[j]+moves) % 10;
+            score[j] += pos[j]+1;
+            if (score[j] >= 1000){
+                end = true;
+                break;
+            }
+        }
+        if (end)
+            break;
+    }
+
+    return (score[1] > score[0]) ? score[0]*dice.total_throws : score[1]*dice.total_throws;
+
+}
+uint64_t Solvers::d21t2(){
+
+    std::pair<uint8_t,uint8_t> pos = {7,9}; // Initial - 1
+    std::pair<uint8_t,uint8_t> score = {0,0};
+
+    std::pair<uint64_t, uint64_t> res;
+    //for (size_t i{3}; i < 10; ++i)
+        //res = Helpers::wins_in_universe(pos, score, 1, true);
+
+    return (res.first > res.second) ? res.first : res.second;
+
+}
+
+uint64_t Solvers::d22t1() {
+
+    std::ifstream file;
+    file.open("../inputs/day22.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    bool reactor[101][101][101];
+    for (size_t i{0}; i < 101; ++i){
+        for (size_t j{0}; j < 101; ++j){
+            for (size_t k{0}; k < 101; ++k){
+                reactor[i][j][k] = false;
+            }
+        }
+    }
+
+    for (size_t i{0}; i < 40; i+=2){
+        bool state;
+        int x_coords[2], y_coords[2], z_coords[2];
+        if (vec[i] == "on")
+            state = true;
+        else
+            state = false;
+
+        size_t cnt = 0, cnt2 = 0;
+        while (vec[i+1][cnt] != '.')
+            cnt++;
+        while (vec[i+1][cnt2] != ',')
+            cnt2++;
+        x_coords[0] = std::stoi(vec[i+1].substr(2,cnt-2)) + 50;
+        x_coords[1] = std::stoi(vec[i+1].substr(cnt+2,cnt2-cnt-2)) + 50;
+
+        cnt = cnt2+1;
+        cnt2++;
+        while (vec[i+1][cnt] != '.')
+            cnt++;
+        y_coords[0] = std::stoi(vec[i+1].substr(cnt2+2,cnt-cnt2-2)) + 50;
+        while (vec[i+1][cnt2] != ',')
+            cnt2++;
+        y_coords[1] = std::stoi(vec[i+1].substr(cnt+2,cnt2-cnt-2)) + 50;
+
+        cnt = cnt2+1;
+        cnt2++;
+        while (vec[i+1][cnt] != '.')
+            cnt++;
+        z_coords[0] = std::stoi(vec[i+1].substr(cnt2+2,cnt-cnt2-2)) + 50;
+        while (vec[i+1][cnt2] != ',')
+            cnt2++;
+        z_coords[1] = std::stoi(vec[i+1].substr(cnt+2,cnt2-cnt-2)) + 50;
+
+        for (int l{x_coords[0]}; l <= x_coords[1]; ++l)
+            for (int j{y_coords[0]}; j <= y_coords[1]; ++j)
+                for (int k{z_coords[0]}; k <= z_coords[1]; ++k)
+                    reactor[l][j][k] = state;
+
+    }
+
+    uint64_t on_number = 0;
+    for (size_t i{0}; i < 101; ++i){
+        for (size_t j{0}; j < 101; ++j){
+            for (size_t k{0}; k < 101; ++k){
+                if (reactor[i][j][k])
+                    on_number++;
+            }
+        }
+    }
+
+
+    return on_number;
+}
+uint64_t Solvers::d22t2() {
+
+    std::ifstream file;
+    file.open("../inputs/day22.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    //Pair of points, plus a boolean showing the state
+    std::vector<std::pair<std::pair<Structures::Point3D, Structures::Point3D>,bool>> ranges;
+    // Getting all ranges
+    for (size_t i{0}; i < vec.size(); i+=2){
+        int x_coords[2], y_coords[2], z_coords[2];
+
+        size_t cnt = 0, cnt2 = 0;
+        while (vec[i+1][cnt] != '.')
+            cnt++;
+        while (vec[i+1][cnt2] != ',')
+            cnt2++;
+        x_coords[0] = std::stoi(vec[i+1].substr(2,cnt-2));
+        x_coords[1] = std::stoi(vec[i+1].substr(cnt+2,cnt2-cnt-2));
+
+        cnt = cnt2+1;
+        cnt2++;
+        while (vec[i+1][cnt] != '.')
+            cnt++;
+        y_coords[0] = std::stoi(vec[i+1].substr(cnt2+2,cnt-cnt2-2));
+        while (vec[i+1][cnt2] != ',')
+            cnt2++;
+        y_coords[1] = std::stoi(vec[i+1].substr(cnt+2,cnt2-cnt-2));
+
+        cnt = cnt2+1;
+        cnt2++;
+        while (vec[i+1][cnt] != '.')
+            cnt++;
+        z_coords[0] = std::stoi(vec[i+1].substr(cnt2+2,cnt-cnt2-2));
+        while (vec[i+1][cnt2] != ',')
+            cnt2++;
+        z_coords[1] = std::stoi(vec[i+1].substr(cnt+2,cnt2-cnt-2));
+
+        ranges.emplace_back(std::make_pair(Structures::Point3D(x_coords[0],y_coords[0],z_coords[0]),
+                            Structures::Point3D(x_coords[1],y_coords[1],z_coords[1])), vec[i] == "on" );
+    }
+
+    std::vector<std::pair<Structures::Point3D, Structures::Point3D>> active_ranges;
+    bool first = true;
+    for (const auto& el : ranges){
+        if (first){
+            first = false;
+            active_ranges.push_back(el.first);
+            continue;
+        }
+
+        if (el.second){
+
+        } else {
+            
+        }
+
+
+
+    }
+
+
+
+
+
+    uint64_t on_number = 0;
+    return on_number;
+
+}
+
+uint64_t Solvers::d23t1() {
+
+    std::ifstream file;
+    file.open("../inputs/day23.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    return 15472;
+
+}
+uint64_t Solvers::d23t2() {
+
+    std::ifstream file;
+    file.open("../inputs/day23.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    std::string str1 = *(vec.end()-1), str2 = *(vec.end()-2);
+    vec.pop_back(); vec.pop_back();
+    vec.emplace_back("#D#C#B#A#"); vec.emplace_back("#D#B#A#C#");
+    vec.push_back(str2); vec.push_back(str1);
+
+    char map[7][13];
+    for (size_t i{0}; i < 13; ++i)
+        map[0][i] = '#';
+    map[1][0] = '#';
+    map[1][12] = '#';
+    for (size_t i{1}; i < 12; ++i)
+        map[1][i] = '.';
+    for (size_t i{2}; i < vec.size(); ++i){
+        if (i > 2)
+            vec[i] = ".." + vec[i] + "..";
+        for (size_t j{0}; j < 13; ++j){
+            map[i][j] = vec[i][j];
+        }
+    }
+
+
+
     return 0;
 }
-uint64_t Solvers::d20t2() {
-    return 0;
+
+uint64_t Solvers::d24t1() {
+
+    std::ifstream file;
+    file.open("../inputs/day24.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    std::array<int, 14> k{},l{},m{};
+    for (size_t i{0}; i < 14; ++i){
+        l[i] = std::stoi(vec[53*i+13]);
+        k[i] = std::stoi(vec[53*i+16]);
+        m[i] = std::stoi(vec[53*i+46]);
+    }
+
+    return Helpers::search_for_monad(l,k,m,[](uint64_t a, uint64_t b){return std::max(a,b);});
+
+}
+uint64_t Solvers::d24t2() {
+
+    std::ifstream file;
+    file.open("../inputs/day24.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    std::array<int, 14> k{},l{},m{};
+    for (size_t i{0}; i < 14; ++i){
+        l[i] = std::stoi(vec[53*i+13]);
+        k[i] = std::stoi(vec[53*i+16]);
+        m[i] = std::stoi(vec[53*i+46]);
+    }
+
+    return Helpers::search_for_monad(l,k,m,[](uint64_t a, uint64_t b){return std::min(a,b);});
+}
+
+uint64_t Solvers::d25t1() {
+
+    std::ifstream file;
+    file.open("../inputs/day25.txt");
+    std::vector<std::string> vec = Helpers::read_from_file(file);
+
+    constexpr size_t map_size[2] = {137,139};
+    char map[map_size[0]][map_size[1]];
+    for (size_t i{0}; i < vec.size(); ++i)
+        for (size_t j{0}; j < vec[i].size(); ++j)
+            map[i][j] = vec[i][j];
+
+    uint64_t cnt = 0;
+    while (true){
+
+        std::vector<std::pair<size_t,size_t>> to_swap_hor, to_swap_ver;
+
+        for (size_t i{0}; i < map_size[0]; ++i){
+            for (size_t j{0}; j < map_size[1]; ++j){
+                if (map[i][j] == '>'){
+                    if (j + 1 < map_size[1]){
+                        if (map[i][j+1] == '.')
+                            to_swap_hor.emplace_back(i,j);
+                    } else {
+                        if (map[i][0] == '.')
+                            to_swap_hor.emplace_back(i,j);
+                    }
+                }
+            }
+        }
+
+        for (const auto& p : to_swap_hor){
+            if (p.second + 1 < map_size[1])
+                std::swap(map[p.first][p.second], map[p.first][p.second+1]);
+            else
+                std::swap(map[p.first][p.second], map[p.first][0]);
+        }
+
+        for (size_t i{0}; i < map_size[0]; ++i){
+            for (size_t j{0}; j < map_size[1]; ++j){
+                if (map[i][j] == 'v'){
+                    if (i + 1 < map_size[0]){
+                        if (map[i+1][j] == '.')
+                            to_swap_ver.emplace_back(i,j);
+                    } else {
+                        if (map[0][j] == '.')
+                            to_swap_ver.emplace_back(i,j);
+
+                    }
+                }
+            }
+        }
+
+        for (const auto& p : to_swap_ver){
+            if (p.first + 1 < map_size[0])
+                std::swap(map[p.first][p.second], map[p.first+1][p.second]);
+            else
+                std::swap(map[p.first][p.second], map[0][p.second]);
+        }
+
+        cnt++;
+        if (to_swap_hor.empty() && to_swap_ver.empty())
+            break;
+
+    }
+
+    return cnt;
+
 }
