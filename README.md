@@ -5,6 +5,16 @@
 ---
 #### My Solutions for the problems in Advent of Code 2021
 
+### UPDATE - 2021.12.31
+
+This is what I had time for up until the end of the year. I completed all tasks except for
++ Day 19, Task 1 and 2
++ Day 21, Task 2
++ Day 22, Task 2
++ Day 23, Task 2
+
+These tasks proved much harder to me than I originally anticipated. Since I also have some university assignments to work on, that take priority, I'll have to leave these unsolved. Maybe I'll come back to them in February. It was a great milestone for me though, since this was the first year I attempted Advent of Code seriously, so I think I can be proud of coming this far! See you next year!
+
 ### UPDATE - 2021.12.17
 
 I have basically restructured the entire project and divided it into multiple headers and their implementations. There are 3 new classes now, all of them can be found in the ``AoC2021/src`` folder. They each have a ``.cpp`` and ``.h`` file, which make up a library, that is linked to ``main.cpp`` using CMake. Here are the details of the classes:
